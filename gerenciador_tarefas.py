@@ -9,11 +9,11 @@ import time
 #    - No Windows, procure "Fontes de Dados ODBC" e veja a aba "Drivers".
 #    - Exemplo comum: "MySQL ODBC 8.0 Unicode Driver"
 CONNECTION_STRING = (
-    "DRIVER={MySQL ODBC 8.0 Unicode Driver};"
+    "DRIVER={MySQL ODBC 9.4 Unicode Driver};"
     "SERVER=localhost;"
-    "DATABASE=db_gerenciador_tarefas;"
+    "DATABASE=gerenciadortarefas;"
     "USER=root;"
-    "PASSWORD= 123456;"
+    "PASSWORD= 9951;"
 )
 
 # --- FUNÇÕES AUXILIARES ---
@@ -36,14 +36,14 @@ def listar_registros(conn, tabela):
     cursor = conn.cursor()
     if tabela == 'USUARIO':
         print("\n--- Usuários Cadastrados ---")
-        cursor.execute("SELECT id, nome, email FROM USUARIO")
+        cursor.execute("SELECT id_usuario, nome, email FROM USUARIO")
         for row in cursor.fetchall():
-            print(f"ID: {row.id} | Nome: {row.nome} | Email: {row.email}")
+            print(f"ID: {row.id_usuario} | Nome: {row.nome} | Email: {row.email}")
     elif tabela == 'TAREFA':
         print("\n--- Tarefas Cadastradas ---")
-        cursor.execute("SELECT id, titulo, status FROM TAREFA")
+        cursor.execute("SELECT id_tarefa, titulo, status FROM TAREFA")
         for row in cursor.fetchall():
-            print(f"ID: {row.id} | Título: {row.titulo} | Status: {row.status}")
+            print(f"ID: {row.id_tarefa} | Título: {row.titulo} | Status: {row.status}")
     cursor.close()
 
 # --- FUNÇÕES DO MENU PRINCIPAL ---
@@ -93,9 +93,9 @@ def relatorios(conn):
     if opcao == '1':
         print("\n--- Total de Tarefas por Usuário ---")
         query = """
-            SELECT u.nome, COUNT(t.id) as total
+            SELECT u.nome, COUNT(t.id_tarefa) as total
             FROM USUARIO u
-            LEFT JOIN TAREFA t ON u.id = t.usuario_id
+            LEFT JOIN TAREFA t ON u.id_usuario = t.id_usuario
             GROUP BY u.nome
             ORDER BY total DESC
         """
@@ -108,17 +108,17 @@ def relatorios(conn):
     elif opcao == '2':
         print("\n--- Detalhes de Todas as Tarefas ---")
         query = """
-            SELECT t.id, t.titulo, t.status, u.nome as usuario, c.nome as categoria
+            SELECT t.id_tarefa, t.titulo, t.status, u.nome as usuario, c.nome as categoria
             FROM TAREFA t
-            JOIN USUARIO u ON t.usuario_id = u.id
+            JOIN USUARIO u ON t.id_usuario = u.id_usuario
             JOIN CATEGORIA c ON t.categoria_id = c.id
-            ORDER BY u.nome, t.id
+            ORDER BY u.nome, t.id_tarefa
         """
         cursor.execute(query)
         print(f"{'ID':<4} | {'Título':<30} | {'Status':<15} | {'Usuário':<20} | {'Categoria'}")
         print("-" * 90)
         for row in cursor.fetchall():
-            print(f"{row.id:<4} | {row.titulo:<30} | {row.status:<15} | {row.usuario:<20} | {row.categoria}")
+            print(f"{row.id_tarefa:<4} | {row.titulo:<30} | {row.status:<15} | {row.usuario:<20} | {row.categoria}")
 
     else:
         print("Opção inválida.")
@@ -152,9 +152,11 @@ def inserir_registros(conn):
             
             titulo = input("Título da tarefa: ")
             descricao = input("Descrição: ")
+            data_inicio = input("Data de início (YYYY-MM-DD) [opcional]: ")
+            data_fim = input("Data de fim (YYYY-MM-DD) [opcional]: ")
             cursor.execute(
-                "INSERT INTO TAREFA (titulo, descricao, status, usuario_id, categoria_id) VALUES (?, ?, 'pendente', ?, ?)",
-                titulo, descricao, usuario_id, categoria_id
+                "INSERT INTO TAREFA (titulo, descricao, data_inicio, data_fim, status, id_usuario, categoria_id) VALUES (?, ?, ?, ?, 'pendente', ?, ?)",
+                titulo, descricao, data_inicio, data_fim, usuario_id, categoria_id
             )
             print("Tarefa inserida com sucesso!")
         
@@ -178,38 +180,68 @@ def remover_registros(conn):
     opcao = input("O que deseja remover? ")
     
     tabela = ""
-    if opcao == '1': tabela = "USUARIO"
-    elif opcao == '2': tabela = "TAREFA"
-    else:
-        print("Opção inválida."); return
-        
-    listar_registros(conn, tabela)
-    try:
-        id_remover = int(input(f"Digite o ID do(a) {tabela} que deseja remover: "))
-        
-        confirmacao = input(f"Tem CERTEZA que quer remover o registro ID {id_remover}? (s/n): ").lower()
-        if confirmacao != 's':
-            print("Operação cancelada.")
-            return
+    if opcao == '1':
+        tabela = "USUARIO"
+        listar_registros(conn, tabela)
+        try:
+            id_remover = int(input(f"Digite o ID do(a) {tabela} que deseja remover: "))
 
-        cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM {tabela} WHERE id = ?", id_remover)
-        conn.commit()
-        
-        if cursor.rowcount > 0:
-            print(f"{tabela} removido com sucesso!")
+            confirmacao = input(f"Tem CERTEZA que quer remover o registro ID {id_remover}? (s/n): ").lower()
+            if confirmacao != 's':
+                print("Operação cancelada.")
+                return
+
+            cursor = conn.cursor()
+            cursor.execute(f"DELETE FROM {tabela} WHERE id_usuario = ?", id_remover)
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                print(f"{tabela} removido com sucesso!")
+            else:
+                print("Nenhum registro encontrado com este ID.")
+
+        except pyodbc.Error as e:
+            if e.args[0] == '23000':
+                print("\nERRO: Este usuário não pode ser removido pois possui tarefas associadas a ele.")
+                print("Remova ou reatribua as tarefas antes de remover o usuário.")
+            else:
+                print(f"ERRO ao remover: {e}")
+            conn.rollback()
+        except ValueError:
+            print("ID inválido. Por favor, digite um número.")
+   
+    elif opcao == '2': 
+        tabela = "TAREFA"
+        listar_registros(conn, tabela)
+        try:
+            id_remover = int(input(f"Digite o ID do(a) {tabela} que deseja remover: "))
+
+            confirmacao = input(f"Tem CERTEZA que quer remover o registro ID {id_remover}? (s/n): ").lower()
+            if confirmacao != 's':
+                print("Operação cancelada.")
+                return
+
+            cursor = conn.cursor()
+            cursor.execute(f"DELETE FROM {tabela} WHERE id_tarefa = ?", id_remover)
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                print(f"{tabela} removido com sucesso!")
+            else:
+                print("Nenhum registro encontrado com este ID.")
+
+        except pyodbc.Error as e:
+            if e.args[0] == '23000':
+                print("\nERRO: Este usuário não pode ser removido pois possui tarefas associadas a ele.")
+                print("Remova ou reatribua as tarefas antes de remover o usuário.")
+            else:
+                print(f"ERRO ao remover: {e}")
+            conn.rollback()
+        except ValueError:
+            print("ID inválido. Por favor, digite um número.")
         else:
-            print("Nenhum registro encontrado com este ID.")
-            
-    except pyodbc.Error as e:
-        if e.args[0] == '23000':
-            print("\nERRO: Este usuário não pode ser removido pois possui tarefas associadas a ele.")
-            print("Remova ou reatribua as tarefas antes de remover o usuário.")
-        else:
-            print(f"ERRO ao remover: {e}")
-        conn.rollback()
-    except ValueError:
-        print("ID inválido. Por favor, digite um número.")
+            print("Opção inválida.")
+            return
     
     input("\nPressione Enter para voltar ao menu principal...")
 
@@ -228,15 +260,15 @@ def atualizar_registros(conn):
             return
 
         cursor = conn.cursor()
-        cursor.execute("UPDATE TAREFA SET status = ? WHERE id = ?", novo_status, id_atualizar)
+        cursor.execute("UPDATE TAREFA SET status = ? WHERE id_tarefa = ?", novo_status, id_atualizar)
         conn.commit()
         
         if cursor.rowcount > 0:
             print("Tarefa atualizada com sucesso!")
             # (Req 6.d.7) Mostra o registro atualizado
-            cursor.execute("SELECT id, titulo, status FROM TAREFA WHERE id = ?", id_atualizar)
+            cursor.execute("SELECT id_tarefa, titulo, descricao, data_inicio, data_fim, status, tempo_gasto, id_usuario, categoria_id  FROM TAREFA WHERE id_tarefa = ?", id_atualizar)
             row = cursor.fetchone()
-            print(f"Atualizado -> ID: {row.id} | Título: {row.titulo} | Status: {row.status}")
+            print(f"Atualizado -> ID: {row.id_tarefa} | Título: {row.titulo} | Status: {row.status}")
         else:
             print("Nenhuma tarefa encontrada com este ID.")
             
