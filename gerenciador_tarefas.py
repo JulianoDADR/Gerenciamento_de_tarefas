@@ -11,7 +11,7 @@ import time
 CONNECTION_STRING = (
     "DRIVER={MySQL ODBC 9.4 Unicode Driver};"
     "SERVER=localhost;"
-    "DATABASE=dbmain;"
+    "DATABASE=maindb;"
     "USER=root;"
     "PASSWORD= mysql;"
 )
