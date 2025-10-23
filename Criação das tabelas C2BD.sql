@@ -26,6 +26,11 @@ CREATE TABLE categoria (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO categoria (id, nome, descricao) VALUES
+(1, 'trabalho', 'Profissional'),
+(2, 'estudo', 'materia'),
+(3, 'pessoal', 'privado');
+
 
 CREATE TABLE tarefa (
     id_tarefa INT NOT NULL AUTO_INCREMENT,
@@ -101,3 +106,4 @@ CREATE TABLE anexo (
         ON DELETE CASCADE
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
