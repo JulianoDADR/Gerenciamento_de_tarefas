@@ -56,7 +56,7 @@ def tela_splash():
     time.sleep(2)
 
 def verificar_registros_iniciais(conn):
-    
+
     print("--- Verificação Inicial do Banco de Dados ---")
     cursor = conn.cursor()
     try:
@@ -74,8 +74,8 @@ def verificar_registros_iniciais(conn):
 def relatorios(conn):
     
     print("--- Menu de Relatórios ---")
-    print("1. Total de tarefas por usuário (Agrupamento)")
-    print("2. Detalhes de todas as tarefas (Junção)")
+    print("1. Total de tarefas por usuário (Agrupamento) ")
+    print("2. Detalhes de todas as tarefas (Junção) ")
     
     opcao = input("Escolha um relatório: ")
     cursor = conn.cursor()
