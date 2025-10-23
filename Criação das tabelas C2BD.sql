@@ -1,8 +1,4 @@
--- =======================================================
--- SISTEMA DE GERENCIAMENTO DE TAREFAS - Versão Completa (MySQL)
--- =======================================================
 
--- ⚠ Excluir tabelas antigas (opcional, se já existirem)
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS anexo;
 DROP TABLE IF EXISTS comentario;
@@ -13,9 +9,7 @@ DROP TABLE IF EXISTS tarefa;
 DROP TABLE IF EXISTS usuario;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- =======================================================
--- Tabela: USUARIO
--- =======================================================
+
 CREATE TABLE usuario (
     id_usuario INT NOT NULL AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
@@ -24,9 +18,7 @@ CREATE TABLE usuario (
     PRIMARY KEY (id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: CATEGORIA
--- =======================================================
+
 CREATE TABLE categoria (
     id INT NOT NULL AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
@@ -34,9 +26,7 @@ CREATE TABLE categoria (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: TAREFA
--- =======================================================
+
 CREATE TABLE tarefa (
     id_tarefa INT NOT NULL AUTO_INCREMENT,
     titulo VARCHAR(150) NOT NULL,
@@ -56,9 +46,7 @@ CREATE TABLE tarefa (
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: TEMPO_GASTO
--- =======================================================
+
 CREATE TABLE tempo_gasto (
     id INT NOT NULL AUTO_INCREMENT,
     tarefa_id INT NOT NULL,
@@ -70,9 +58,7 @@ CREATE TABLE tempo_gasto (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: RELATORIO
--- =======================================================
+
 CREATE TABLE relatorio (
     id INT NOT NULL AUTO_INCREMENT,
     usuario_id INT NOT NULL,
@@ -86,9 +72,7 @@ CREATE TABLE relatorio (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: COMENTARIO
--- =======================================================
+
 CREATE TABLE comentario (
     id INT NOT NULL AUTO_INCREMENT,
     tarefa_id INT NOT NULL,
@@ -104,9 +88,7 @@ CREATE TABLE comentario (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =======================================================
--- Tabela: ANEXO
--- =======================================================
+
 CREATE TABLE anexo (
     id INT NOT NULL AUTO_INCREMENT,
     tarefa_id INT NOT NULL,
@@ -117,4 +99,5 @@ CREATE TABLE anexo (
     CONSTRAINT fk_anexo_tarefa FOREIGN KEY (tarefa_id)
         REFERENCES tarefa (id_tarefa)
         ON DELETE CASCADE
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
