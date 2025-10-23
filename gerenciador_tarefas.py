@@ -268,7 +268,6 @@ def atualizar_registros(conn):
         
     input("\nPressione Enter para voltar ao menu principal...")
 
-
 def main():
     tela_splash()
     
@@ -300,10 +299,8 @@ def main():
             print("Opção inválida. Tente novamente.")
             time.sleep(1)
 
-    # Fecha a conexão antes de sair
     conn.close()
     print("Sistema encerrado.")
 
-# Garante que a função main() seja chamada quando o script for executado
 if __name__ == "__main__":
     main()
