@@ -2,12 +2,7 @@ import pyodbc
 import sys
 import time
 
-# --- PASSO 1: CONFIGURE A CONEXÃO AQUI ---
-# IMPORTANTE:
-# 1. Tenha o "MySQL ODBC Driver" instalado no seu computador.
-# 2. O nome do DRIVER deve ser exatamente igual ao instalado.
-#    - No Windows, procure "Fontes de Dados ODBC" e veja a aba "Drivers".
-#    - Exemplo comum: "MySQL ODBC 8.0 Unicode Driver"
+
 CONNECTION_STRING = (
     "DRIVER={MySQL ODBC 9.4 Unicode Driver};"
     "SERVER=localhost;"
@@ -16,22 +11,20 @@ CONNECTION_STRING = (
     "PASSWORD= mysql;"
 )
 
-# --- FUNÇÕES AUXILIARES ---
 
 def conectar_banco():
     try:
         conn = pyodbc.connect(CONNECTION_STRING)
         return conn
     except pyodbc.Error as ex:
-        # Pega o código do erro (SQLSTATE)
+
         sqlstate = ex.args[0]
         if sqlstate == 'IM002':
             print("ERRO: Driver ODBC do MySQL não encontrado.")
             print("Verifique se o nome do DRIVER na CONNECTION_STRING está correto e se o driver está instalado.")
         else:
             print(f"Erro de conexão com o banco de dados: {ex}")
-        sys.exit(1) # Encerra o programa se não puder conectar
-
+        sys.exit(1) 
 def listar_registros(conn, tabela):
     cursor = conn.cursor()
     if tabela == 'USUARIO':
@@ -46,7 +39,6 @@ def listar_registros(conn, tabela):
             print(f"ID: {row.id_tarefa} | Título: {row.titulo} | Status: {row.status}")
     cursor.close()
 
-# --- FUNÇÕES DO MENU PRINCIPAL ---
 
 def tela_splash():
     
@@ -64,7 +56,6 @@ def tela_splash():
     time.sleep(2)
 
 def verificar_registros_iniciais(conn):
-    """(Req 5.c) Conta e exibe a quantidade de registros nas tabelas."""
     
     print("--- Verificação Inicial do Banco de Dados ---")
     cursor = conn.cursor()
@@ -81,7 +72,6 @@ def verificar_registros_iniciais(conn):
     input("\nPressione Enter para ir ao menu principal...")
 
 def relatorios(conn):
-    """(Req 6.a) Exibe o menu de relatórios."""
     
     print("--- Menu de Relatórios ---")
     print("1. Total de tarefas por usuário (Agrupamento)")
@@ -278,7 +268,6 @@ def atualizar_registros(conn):
         
     input("\nPressione Enter para voltar ao menu principal...")
 
-# --- PROGRAMA PRINCIPAL ---
 
 def main():
     tela_splash()
